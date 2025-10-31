@@ -32,6 +32,7 @@ export async function fetchNoteById(id: string) {
   return res.data;
 }
 
+// Current user
 export async function getCurrentUser() {
   // Дістаємо поточні cookie
   const cookieStore = await cookies();

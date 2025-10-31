@@ -1,5 +1,6 @@
 import { nextServer } from './api';
 import { FetchNotesResponse, Note, NoteFormValues } from '@/types/note';
+import { User } from '@/types/user';
 
 // All notes
 export const fetchNotes = async (params?: {
@@ -20,11 +21,13 @@ export const fetchNotes = async (params?: {
   return res.data;
 };
 
+// Create note
 export const createNote = async (newNote: NoteFormValues) => {
   const response = await nextServer.post<Note>('/notes', newNote);
   return response.data;
 };
 
+// Delete note
 export const deleteNote = async (id: string): Promise<Note> => {
   const response = await nextServer.delete<Note>(`notes/${id}`);
   return response.data;
@@ -34,4 +37,26 @@ export const deleteNote = async (id: string): Promise<Note> => {
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const response = await nextServer.get<Note>(`notes/${id}`);
   return response.data;
+};
+
+//Registration
+export type RegisterRequest = {
+  email: string;
+  password: string;
+};
+
+export const register = async (data: RegisterRequest) => {
+  const res = await nextServer.post<User>('/auth/register', data);
+  return res.data;
+};
+
+// Login
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export const login = async (data: LoginRequest) => {
+  const res = await nextServer.post<User>('/auth/login', data);
+  return res.data;
 };
