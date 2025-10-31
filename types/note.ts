@@ -4,7 +4,7 @@ export interface Note {
   content: string;
   createdAt: string;
   updatedAt: string;
-  tag: NoteTag;
+  tag: string;
 }
 export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 
@@ -14,17 +14,14 @@ export interface NoteFormValues {
   tag: string;
 }
 
-export interface FetchNoteResponse {
+export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-// Todo, Work, Personal, Meeting, Shopping;
-//  {
-//       "id": "65ca67e7ae7f10c88b598384",
-//       "title": "Sample Note",
-//       "content": "This is a sample note content.",
-//       "createdAt": "2022-01-01T00:00:00Z",
-//       "updatedAt": "2022-01-01T00:00:00Z",
-//       "tag": "Todo"
-//     }
+export interface FetchNotesParams {
+  query?: string;
+  page?: number;
+  perPage?: number;
+  tag?: string;
+}

@@ -1,17 +1,13 @@
 // app/notes/filter/[...slug]/page.tsx
-import NotesClient from '@/app/notes/filter/[...slug]/Notes.client';
+import NotesClient from '@/app/(private routers)/notes/filter/[...slug]/Notes.client';
 
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/serverApi';
 import type { Metadata } from 'next';
-
-type Props = {
-  params: Promise<{ slug?: string[] }>;
-};
 
 // Генерація динамічних метаданих
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -51,6 +47,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+type Props = {
+  params: Promise<{ slug?: string[] }>;
+};
+
 const FilteredNotesPage = async ({ params }: Props) => {
   const { slug } = await params;
 
@@ -59,14 +59,27 @@ const FilteredNotesPage = async ({ params }: Props) => {
 
   const queryClient = new QueryClient();
   const tagKey = tagName ?? 'all';
+  const initialQuery = ''; // пустий пошук
+  const initialPage = 1;
+
   await queryClient.prefetchQuery({
-    queryKey: ['notes', '', 1, tagKey],
-    queryFn: () => fetchNotes('', 1, 12, tagName),
+    queryKey: ['notes', initialQuery, initialPage, tagKey],
+    queryFn: () =>
+      fetchNotes({
+        query: initialQuery,
+        page: initialPage,
+        perPage: 12,
+        tag: tagKey,
+      }),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient tagName={tagName} />
+      <NotesClient
+        tagName={tagName}
+        initialQuery={initialQuery}
+        initialPage={initialPage}
+      />
     </HydrationBoundary>
   );
 };
