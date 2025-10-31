@@ -58,18 +58,18 @@ const FilteredNotesPage = async ({ params }: Props) => {
     slug && slug.length > 0 && slug[0] !== 'all' ? slug[0] : undefined;
 
   const queryClient = new QueryClient();
-  const tagKey = tagName ?? 'all';
+
   const initialQuery = ''; // пустий пошук
   const initialPage = 1;
 
   await queryClient.prefetchQuery({
-    queryKey: ['notes', initialQuery, initialPage, tagKey],
+    queryKey: ['notes', initialQuery, initialPage, tagName ?? 'all'],
     queryFn: () =>
       fetchNotes({
         query: initialQuery,
         page: initialPage,
         perPage: 12,
-        tag: tagKey,
+        ...(tagName ? { tag: tagName } : {}),
       }),
   });
 

@@ -33,19 +33,18 @@ const NotesClient = ({
   }, 800);
 
   // ✅ React Query підхоплює гідратований кеш
-  const tagKey = tagName ?? 'all';
+
   const { data, isError, isFetching } = useQuery<FetchNotesResponse>({
-    queryKey: ['notes', query, currentPage, tagKey],
+    queryKey: ['notes', query, currentPage, tagName ?? 'all'],
     queryFn: () =>
       fetchNotes({
         query: query,
         page: currentPage,
         perPage: 12,
-        tag: tagKey,
+        ...(tagName ? { tag: tagName } : {}),
       }),
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-
     placeholderData: keepPreviousData, //  залишає старі дані поки нові завантажуються
   });
 
