@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ApiError } from '@/app/api/api';
-// import { useAuthStore } from '@/lib/stores/AuthStore';
+import { useAuthStore } from '@/lib/store/authStore';
 import css from './SignInPage.module.css';
 import { login, LoginRequest } from '@/lib/api/clientApi';
 
@@ -12,7 +12,7 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Отримуємо метод із стора
-  // const setUser = useAuthStore((state) => state.setUser);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -24,7 +24,7 @@ export default function SignUpPage() {
 
       if (res) {
         // Записуємо користувача у глобальний стан
-        // setUser(res);
+        setUser(res);
         router.push('/profile');
       } else {
         setError('Invalid email or password');

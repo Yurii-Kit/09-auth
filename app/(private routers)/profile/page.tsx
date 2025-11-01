@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { User } from '@/types/user';
 
 import css from './Profile.module.css';
+import { getMe } from '@/lib/api/serverApi';
 
 export const metadata: Metadata = {
   title: 'Profile | NoteHub',
@@ -14,7 +15,7 @@ export default async function ProfilePage() {
   let user: User | null = null;
 
   try {
-    user = await getCurrentUser();
+    user = await getMe();
   } catch (err) {
     console.error('Failed to fetch current user:', err);
   }
@@ -39,6 +40,7 @@ export default async function ProfilePage() {
             width={120}
             height={120}
             className={css.avatar}
+            priority
           />
         </div>
         <div className={css.profileInfo}>

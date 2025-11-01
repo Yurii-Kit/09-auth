@@ -1,10 +1,33 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuthStore } from '@/lib/store/authStore';
+import { useRouter } from 'next/navigation';
+import { logout } from '@/lib/api/clientApi';
 import css from './AuthNavigation.module.css';
 
 const AuthNavigation = () => {
-  return (
+  const router = useRouter();
+  // Отримуємо поточну сесію та юзера
+  const { isAuthenticated, user } = useAuthStore();
+  // Отримуємо метод очищення глобального стану
+  const clearIsAuthenticated = useAuthStore(
+    (state) => state.clearIsAuthenticated,
+  );
+
+  const handleLogout = async () => {
+    // Викликаємо logout
+    await logout();
+    // Чистимо глобальний стан
+    clearIsAuthenticated();
+    // Виконуємо навігацію на сторінку авторизації
+    router.push('/sign-in');
+  };
+
+  // Якщо є сесія - відображаємо Logout та інформацію про користувача
+  // інакше - посилання на логін та реєстрацію
+
+  return isAuthenticated ? (
     <>
       <li className={css.navigationItem}>
         <Link href="/profile" prefetch={false} className={css.navigationLink}>
@@ -13,10 +36,14 @@ const AuthNavigation = () => {
       </li>
 
       <li className={css.navigationItem}>
-        <p className={css.userEmail}>User email</p>
-        <button className={css.logoutButton}>Logout</button>
+        <p className={css.userEmail}>{user?.username}</p>
+        <button className={css.logoutButton} onClick={handleLogout}>
+          Logout
+        </button>
       </li>
-
+    </>
+  ) : (
+    <>
       <li className={css.navigationItem}>
         <Link href="/sign-in" prefetch={false} className={css.navigationLink}>
           Login

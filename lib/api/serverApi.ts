@@ -33,7 +33,7 @@ export async function fetchNoteById(id: string) {
 }
 
 // Current user
-export async function getCurrentUser() {
+export async function getMe() {
   // Дістаємо поточні cookie
   const cookieStore = await cookies();
   try {
@@ -48,3 +48,17 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+// Check session
+export const checkServerSession = async () => {
+  // Дістаємо поточні cookie
+  const cookieStore = await cookies();
+  const res = await nextServer.get('/auth/session', {
+    headers: {
+      // передаємо кукі далі
+      Cookie: cookieStore.toString(),
+    },
+  });
+  // Повертаємо повний респонс, щоб middleware мав доступ до нових cookie
+  return res;
+};
