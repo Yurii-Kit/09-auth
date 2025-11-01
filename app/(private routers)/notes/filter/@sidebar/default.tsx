@@ -3,7 +3,18 @@ import Link from 'next/link';
 import css from './SidebarNotes.module.css';
 
 // Перелік тегів — оскільки бекенд не має ендпоінта для них
-const tags = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
+const tags = [
+  'Work',
+  'Personal',
+  ' Meeting',
+  'Shopping',
+  'Ideas',
+  'Travel',
+  'Finance',
+  'Health',
+  'Important',
+  'Todo',
+];
 
 const SidebarNotes = async () => {
   return (
