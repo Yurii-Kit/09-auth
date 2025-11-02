@@ -1,5 +1,5 @@
 // app/notes/filter/[...slug]/page.tsx
-import NotesClient from '@/app/(private routers)/notes/filter/[...slug]/Notes.client';
+import NotesClient from '@/app/(private routes)/notes/filter/[...slug]/Notes.client';
 
 import {
   dehydrate,
