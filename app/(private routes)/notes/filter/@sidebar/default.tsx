@@ -6,7 +6,7 @@ import css from './SidebarNotes.module.css';
 const tags = [
   'Work',
   'Personal',
-  ' Meeting',
+  'Meeting',
   'Shopping',
   'Ideas',
   'Travel',

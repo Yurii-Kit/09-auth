@@ -13,7 +13,7 @@ export const fetchNotes = async (params?: {
   const res = await nextServer.get<FetchNotesResponse>('/notes', {
     params: {
       ...(query.trim() ? { search: query.trim() } : {}),
-      ...(tag ? { tag } : {}),
+      ...(tag?.trim() ? { tag: tag.trim() } : {}),
       page,
       perPage,
     },
