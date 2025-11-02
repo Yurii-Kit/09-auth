@@ -4,13 +4,9 @@ import {
   dehydrate,
   HydrationBoundary,
 } from '@tanstack/react-query';
-import { fetchNoteById } from '@/lib/api/api';
+import { fetchNoteById } from '@/lib/api/serverApi';
 import NoteDetailsClient from '@/app/(private routers)/notes/[id]/NoteDetails.client';
 import type { Metadata } from 'next';
-
-type Props = {
-  params: Promise<{ id: string }>;
-};
 
 // Генерація метаданих для сторінки нотатки
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -47,6 +43,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
 //  Компонент повертає проміс, який резолвиться в JSX.Element
 const NoteDetails = async ({ params }: Props) => {
   const { id } = await params;
@@ -61,7 +61,7 @@ const NoteDetails = async ({ params }: Props) => {
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <NoteDetailsClient />
+      <NoteDetailsClient id={id} />
     </HydrationBoundary>
   );
 };

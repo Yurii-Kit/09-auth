@@ -15,7 +15,7 @@ const TagsMenu = ({
   options,
   value,
   onChange,
-  placeholder = 'Select tag',
+  placeholder,
 }: TagsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
 

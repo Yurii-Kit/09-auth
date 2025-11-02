@@ -32,7 +32,7 @@
 
 // export default NotePreview;
 
-import { fetchNoteById } from '@/lib/api/api';
+import { fetchNoteById } from '@/lib/api/serverApi';
 import NotePreviewClient from './NotePreview.client';
 
 type Props = {

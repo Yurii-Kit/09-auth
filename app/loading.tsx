@@ -1,4 +1,4 @@
-// app/notes/loading.tsx
+// app/loading.tsx
 
 const Loading = () => {
   return <p>Loading, please wait...</p>;

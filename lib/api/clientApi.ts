@@ -80,3 +80,14 @@ export const getMe = async () => {
 export const logout = async (): Promise<void> => {
   await nextServer.post('/auth/logout');
 };
+
+//Update user
+export interface UpdateUserPayload {
+  username: string;
+  email?: string;
+}
+
+export async function updateUser(data: UpdateUserPayload): Promise<User> {
+  const res = await nextServer.patch<User>('/users/me', data);
+  return res.data;
+}

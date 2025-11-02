@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createNote } from '@/lib/api/api';
+import { createNote } from '@/lib/api/clientApi';
 import type { NoteFormValues } from '../../types/note';
 import { useNoteDraftStore } from '@/lib/store/noteStore';
 import TagsMenu from '../TagsMenu/TagsMenu';
+import { useDebouncedCallback } from 'use-debounce';
 import css from './NoteForm.module.css';
 
 const tagOptions: string[] = [
@@ -23,26 +24,24 @@ const NoteForm = () => {
 
   // локальний стан форми — не оновлює Zustand на кожному введенні
   const [formValues, setFormValues] = useState<NoteFormValues>(draft);
-
-  // коли користувач друкує — змінюємо тільки локальний стан
+  // локально оновлюємо одразу
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = event.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🕐 debounce — оновлюємо Zustand тільки якщо користувач не друкує 0.5 с
+  // debounce для автозбереження
+  const debouncedSaveDraft = useDebouncedCallback((values: NoteFormValues) => {
+    setDraft(values);
+  }, 1000);
+
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDraft(formValues);
-    }, 500);
+    debouncedSaveDraft(formValues);
+  }, [formValues, debouncedSaveDraft]);
 
-    return () => clearTimeout(timeout);
-  }, [formValues, setDraft]);
-
+  // Мутація для створення нотатки
   const { mutate } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
@@ -51,22 +50,23 @@ const NoteForm = () => {
     },
   });
 
-  const handleSubmit = (formData: FormData) => {
-    const values = Object.fromEntries(formData) as unknown as NoteFormValues;
-    console.log('Form Values:', values);
-    mutate(values);
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(formValues);
+    mutate(formValues); // всі поля: title, content, tag
   };
+
   const handleCancel = () => router.push('/notes/filter/all');
 
   return (
-    <form className={css.form} action={handleSubmit}>
+    <form className={css.form} onSubmit={handleSubmit}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
           id="title"
           type="text"
           name="title"
-          defaultValue={draft?.title}
+          value={formValues.title}
           onChange={handleChange}
           className={css.input}
           required
@@ -78,7 +78,7 @@ const NoteForm = () => {
         <textarea
           id="content"
           name="content"
-          defaultValue={draft?.content}
+          value={formValues.content}
           onChange={handleChange}
           className={css.textarea}
           required
@@ -92,8 +92,8 @@ const NoteForm = () => {
           id="tag"
           options={tagOptions}
           value={formValues.tag}
-          onChange={(tag) => setFormValues((prev) => ({ ...prev, tag }))}
-          placeholder="Select tag"
+          onChange={(tag) => setFormValues((prev) => ({ ...prev, tag: tag }))}
+          placeholder={'Select tag'}
         />
       </div>
 
