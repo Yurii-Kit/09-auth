@@ -29,13 +29,13 @@ export const createNote = async (newNote: NoteFormValues) => {
 
 // Delete note
 export const deleteNote = async (id: string): Promise<Note> => {
-  const response = await nextServer.delete<Note>(`notes/${id}`);
+  const response = await nextServer.delete<Note>(`/notes/${id}`);
   return response.data;
 };
 
 // Single note
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const response = await nextServer.get<Note>(`notes/${id}`);
+  const response = await nextServer.get<Note>(`/notes/${id}`);
   return response.data;
 };
 

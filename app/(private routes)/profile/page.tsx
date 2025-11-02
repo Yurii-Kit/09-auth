@@ -1,4 +1,4 @@
-// app/(private routers)/profile/page.tsx
+// app/(private routes)/profile/page.tsx
 
 export const dynamic = 'force-dynamic';
 

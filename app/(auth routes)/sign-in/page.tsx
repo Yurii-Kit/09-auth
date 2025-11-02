@@ -7,7 +7,7 @@ import { useAuthStore } from '@/lib/store/authStore';
 import css from './SignInPage.module.css';
 import { login, LoginRequest } from '@/lib/api/clientApi';
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 

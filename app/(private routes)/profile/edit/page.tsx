@@ -26,7 +26,7 @@ export default function EditProfilePage() {
 
         if (!me) {
           console.error('User not found');
-          router.push('/login');
+          router.push('/sign-in');
           return;
         }
 
@@ -35,7 +35,7 @@ export default function EditProfilePage() {
         setUsername(me.username ?? '');
       } catch (err) {
         console.error('Failed to fetch user:', err);
-        router.push('/login'); // редірект при будь-якій помилці
+        router.push('/sign-in'); // редірект при будь-якій помилці
       } finally {
         setLoading(false);
       }
