@@ -9,5 +9,5 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     router.refresh();
   }, [router]);
 
-  return <div className="auth-layout">{children}</div>;
+  return <main className="auth-layout">{children}</main>;
 }

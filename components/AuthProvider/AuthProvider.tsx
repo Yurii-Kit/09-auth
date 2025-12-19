@@ -4,96 +4,98 @@
 
 import { checkSession, getMe, logout } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import css from './AuthProvider.module.css';
 
 type Props = {
   children: React.ReactNode;
 };
 
-const privateRoutes = ['/profile', '/notes'];
+const PRIVATE_ROUTES = ['/profile', '/notes'] as const;
 
 const AuthProvider = ({ children }: Props) => {
+  const [isChecking, setIsChecking] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
   const setUser = useAuthStore((state) => state.setUser);
   const clearIsAuthenticated = useAuthStore(
     (state) => state.clearIsAuthenticated,
   );
 
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  const isPrivateRoute = privateRoutes.some((route) =>
-    pathname.startsWith(route),
+  const isPrivateRoute = useMemo(
+    () => PRIVATE_ROUTES.some((route) => pathname.startsWith(route)),
+    [pathname],
   );
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      setIsChecking(true);
-
-      try {
-        // Перевіряємо сесію
-        const isAuthenticated = await checkSession();
-
-        if (isAuthenticated) {
-          // Якщо сесія валідна — отримуємо користувача
-          const user = await getMe();
-          if (user) {
-            setUser(user);
-          } else {
-            // Якщо не вдалося отримати користувача — вихід
-            await logout();
-            clearIsAuthenticated();
-            if (isPrivateRoute) {
-              router.push('/sign-in');
-            }
-          }
-        } else {
-          // Якщо сесія невалідна — чистимо стан
-          clearIsAuthenticated();
-
-          // Якщо на приватній сторінці — виконуємо вихід і редірект
-          if (isPrivateRoute) {
-            await logout();
-            clearIsAuthenticated();
-            router.push('/sign-in');
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        clearIsAuthenticated();
-
-        // Якщо на приватній сторінці — виконуємо вихід і редірект
-        if (isPrivateRoute) {
-          try {
-            await logout();
-          } catch {
-            // Ігноруємо помилки logout
-          }
-          clearIsAuthenticated();
-          router.push('/sign-in');
-        }
-      } finally {
-        setIsChecking(false);
+  const handleLogoutAndRedirect = useCallback(async () => {
+    try {
+      await logout();
+    } catch (error) {
+      // Ignore logout errors
+      console.warn('Logout failed:', error);
+    } finally {
+      clearIsAuthenticated();
+      if (isPrivateRoute) {
+        router.push('/sign-in');
       }
-    };
+    }
+  }, [clearIsAuthenticated, isPrivateRoute, router]);
 
+  const checkAuth = useCallback(async () => {
+    setIsChecking(true);
+
+    try {
+      const isSessionValid = await checkSession();
+
+      if (isSessionValid) {
+        const user = await getMe();
+        if (user) {
+          setUser(user);
+        } else {
+          await handleLogoutAndRedirect();
+        }
+      } else {
+        clearIsAuthenticated();
+        if (isPrivateRoute) {
+          await handleLogoutAndRedirect();
+        }
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      clearIsAuthenticated();
+      if (isPrivateRoute) {
+        await handleLogoutAndRedirect();
+      }
+    } finally {
+      setIsChecking(false);
+    }
+  }, [setUser, clearIsAuthenticated, isPrivateRoute, handleLogoutAndRedirect]);
+
+  useEffect(() => {
+    setMounted(true);
     checkAuth();
-  }, [pathname, setUser, clearIsAuthenticated, router, isPrivateRoute]);
+  }, [checkAuth]);
 
-  // Показуємо лоадер під час перевірки
-  if (isChecking) {
-    return <div>Loading...</div>;
-  }
-  // Якщо на приватній сторінці і неавторизований — не показуємо контент
-  // (редірект вже виконано в useEffect)
-
-  if (isPrivateRoute && !isAuthenticated) {
-    return null;
-  }
-
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {mounted && isChecking && (
+        <div
+          className={css.overlay}
+          role="status"
+          aria-live="polite"
+          aria-label="Перевірка сесії"
+        >
+          <div className={css.loaderContainer}>
+            <div className={css.spinner} aria-hidden="true"></div>
+            <p className={css.text}>Перевірка сесії...</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default AuthProvider;

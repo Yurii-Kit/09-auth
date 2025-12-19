@@ -39,7 +39,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <main className={css.mainContent}>
+    <div className={css.mainContent}>
       <h1 className={css.formTitle}>Sign up</h1>
       <form className={css.form} action={handleSubmit}>
         <div className={css.formGroup}>
@@ -74,6 +74,6 @@ export default function SignUpPage() {
 
         {error && <p className={css.error}>{error}</p>}
       </form>
-    </main>
+    </div>
   );
 }

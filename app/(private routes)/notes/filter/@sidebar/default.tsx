@@ -16,7 +16,7 @@ const tags = [
   'Todo',
 ];
 
-const SidebarNotes = async () => {
+const SidebarNotes = () => {
   return (
     <ul className={css.menuList}>
       {/* Посилання для всіх нотаток */}

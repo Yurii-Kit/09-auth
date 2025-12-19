@@ -45,7 +45,7 @@ export default function EditProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <main>Loading profile...</main>;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,7 +81,7 @@ export default function EditProfilePage() {
   }
 
   return (
-    <main className={css.mainContent}>
+    <div className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
 
@@ -124,6 +124,6 @@ export default function EditProfilePage() {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

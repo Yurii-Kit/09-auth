@@ -16,17 +16,20 @@ const NoteDetailsClient = ({ id }: NoteDetailsClientProps) => {
   const {
     data: note,
     isLoading,
+    isFetching,
     error,
   } = useQuery<Note>({
     queryKey: ['note', noteId],
     queryFn: () => fetchNoteById(noteId),
     refetchOnMount: false,
   });
-  if (isLoading) return <p>Loading, please wait...</p>;
+
+  // Показуємо лоадер якщо дані ще завантажуються або відсутні
+  if (isLoading || (isFetching && !note)) return <p>Loading, please wait...</p>;
 
   if (error || !note) return <p>Something went wrong.</p>;
   return (
-    <div className={css.container}>
+    <main className={css.container}>
       <div className={css.item}>
         <div className={css.header}>
           <h2>{note.title}</h2>
@@ -35,7 +38,7 @@ const NoteDetailsClient = ({ id }: NoteDetailsClientProps) => {
         <p className={css.content}>{note.content}</p>
         <p className={css.date}>{new Date(note.createdAt).toLocaleString()}</p>
       </div>
-    </div>
+    </main>
   );
 };
 

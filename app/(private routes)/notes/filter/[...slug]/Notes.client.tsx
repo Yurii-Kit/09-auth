@@ -69,7 +69,7 @@ const NotesClient = ({
       ) : data?.notes?.length ? (
         <>
           <NoteList notes={data.notes} />
-          {isFetching && <p className={css.loading}>Loading notes...</p>}
+          {/* {isFetching && <p className={css.loading}>Loading notes...</p>} */}
         </>
       ) : (
         <p>No notes found</p>
