@@ -1,64 +1,87 @@
+// ===========================
+// СЕРВЕРНІ API ФУНКЦІЇ
+// ===========================
+// Ці функції викликаються ТІЛЬКИ на сервері Next.js (Server Components, Server Actions, API Routes).
+// НЕ можна використовувати в клієнтських компонентах ('use client').
+//
+// Чому потрібні серверні функції?
+// - Безпека: токени не потрапляють в браузер
+// - SEO: дані завантажуються до рендерингу сторінки
+// - Швидкість: менше запитів від клієнта
+
 import { nextServer } from './api';
 import { FetchNotesParams, FetchNotesResponse, Note } from '@/types/note';
 import { User } from '@/types/user';
 import { cookies } from 'next/headers';
 
-// All notes
+// ===========================
+// ОТРИМАТИ ВСІ НОТАТКИ (з фільтрами)
+// ===========================
+// Використовується на серверних сторінках для першого завантаження
 export const fetchNotes = async (
   params?: FetchNotesParams,
 ): Promise<FetchNotesResponse> => {
-  // Дістаємо поточні cookie
+  // Отримуємо cookies з поточного запиту
+  // Cookies містять accessToken та refreshToken
   const cookieStore = await cookies();
+
   const res = await nextServer.get<FetchNotesResponse>('/notes', {
-    params,
+    params, // Параметри фільтрації (search, tag, page, perPage)
     headers: {
-      // передаємо кукі далі
+      // ВАЖЛИВО! Передаємо cookies серверу API
+      // Без цього сервер не зрозуміє, хто робить запит
       Cookie: cookieStore.toString(),
     },
   });
   return res.data;
 };
 
-// Single note
+// ===========================
+// ОТРИМАТИ ОДНУ НОТАТКУ ЗА ID
+// ===========================
+// Використовується для відображення деталей нотатки
 export async function fetchNoteById(id: string) {
-  // Дістаємо поточні cookie
   const cookieStore = await cookies();
   const res = await nextServer.get<Note>(`/notes/${id}`, {
     headers: {
-      // передаємо кукі далі
       Cookie: cookieStore.toString(),
     },
   });
   return res.data;
 }
 
-// Current user
+// ===========================
+// ОТРИМАТИ ДАНІ ПОТОЧНОГО КОРИСТУВАЧА
+// ===========================
+// Використовується в AuthProvider та на сторінці профілю
 export async function getMe() {
-  // Дістаємо поточні cookie
   const cookieStore = await cookies();
   try {
     const res = await nextServer.get<User>(`/users/me`, {
       headers: {
-        // передаємо кукі далі
         Cookie: cookieStore.toString(),
       },
     });
     return res.data;
   } catch {
+    // Якщо користувач не авторизований або токен недійсний
     return null;
   }
 }
 
-// Check session
+// ===========================
+// ПЕРЕВІРИТИ СЕСІЮ (для middleware)
+// ===========================
+// Ця функція викликається в middleware для оновлення токенів
+// Повертає ПОВНИЙ response, щоб middleware міг отримати нові cookies
 export const checkServerSession = async () => {
-  // Дістаємо поточні cookie
   const cookieStore = await cookies();
   const res = await nextServer.get('/auth/session', {
     headers: {
-      // передаємо кукі далі
       Cookie: cookieStore.toString(),
     },
   });
-  // Повертаємо повний респонс, щоб middleware мав доступ до нових cookie
+  // ВАЖЛИВО! Повертаємо весь response, а не тільки data
+  // Middleware потребує доступу до headers['set-cookie']
   return res;
 };

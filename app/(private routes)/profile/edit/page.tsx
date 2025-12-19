@@ -62,14 +62,14 @@ export default function EditProfilePage() {
       if (axios.isAxiosError(err)) {
         const axiosErr = err as AxiosError;
         if (axiosErr.response?.status === 409) {
-          alert('Цей username вже зайнятий. Спробуйте інший.');
+          alert('This username is already taken. Please try another one.');
         } else {
           console.error('Failed to update user:', axiosErr);
-          alert('Помилка при збереженні профілю.');
+          alert('Error saving profile.');
         }
       } else {
         console.error('Unexpected error:', err);
-        alert('Помилка при збереженні профілю.');
+        alert('Error saving profile.');
       }
     } finally {
       setSaving(false);

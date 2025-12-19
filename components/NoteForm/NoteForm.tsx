@@ -1,3 +1,12 @@
+// ===========================
+// ФОРМА СТВОРЕННЯ НОТАТКИ
+// ===========================
+// Цей компонент дозволяє користувачу створювати нові нотатки.
+// Використовує декілька продвинутих технік React:
+// - Локальний стан для швидкої роботи форми
+// - Debounce для автозбереження чернетки
+// - React Query для відправки даних на сервер
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
@@ -9,6 +18,7 @@ import TagsMenu from '../TagsMenu/TagsMenu';
 import { useDebouncedCallback } from 'use-debounce';
 import css from './NoteForm.module.css';
 
+// Доступні теги для нотаток
 const tagOptions: string[] = [
   'Todo',
   'Work',
@@ -18,48 +28,92 @@ const tagOptions: string[] = [
 ];
 
 const NoteForm = () => {
-  const router = useRouter();
+  const router = useRouter(); // Для навігації
 
+  // ===========================
+  // ZUSTAND STORE ДЛЯ ЧЕРНЕТКИ
+  // ===========================
+  // Зберігаємо чернетку нотатки, щоб не втратити дані при перезавантаженні
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
 
-  // локальний стан форми — не оновлює Zustand на кожному введенні
+  // ===========================
+  // ЛОКАЛЬНИЙ СТАН ФОРМИ
+  // ===========================
+  // Чому не одразу в Zustand?
+  // - Оновлення локального стану швидше (React перемальовує тільки цей компонент)
+  // - Zustand оновлюватиметься з debounce (затримкою)
   const [formValues, setFormValues] = useState<NoteFormValues>(draft);
-  // локально оновлюємо одразу
+
+  // ===========================
+  // ОБРОБКА ЗМІНИ ПОЛІВ ФОРМИ
+  // ===========================
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = event.target;
+    // Оновлюємо локальний стан негайно (форма реагує швидко)
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
-  // debounce для автозбереження
+  // ===========================
+  // DEBOUNCE ДЛЯ АВТОЗБЕРЕЖЕННЯ
+  // ===========================
+  // Що таке debounce?
+  // Це техніка, яка відкладає виконання функції до моменту, коли користувач перестане друкувати.
+  //
+  // Приклад:
+  // - Користувач друкує "Hello"
+  // - Без debounce: 5 викликів setDraft (H, He, Hel, Hell, Hello)
+  // - З debounce (1000ms): 1 виклик setDraft через 1 секунду після останнього введення
+  //
+  // Це економить ресурси і робить додаток швидшим!
   const debouncedSaveDraft = useDebouncedCallback((values: NoteFormValues) => {
-    setDraft(values);
-  }, 1000);
+    setDraft(values); // Зберігаємо чернетку в Zustand
+  }, 1000); // Чекаємо 1 секунду після останнього введення
 
+  // ===========================
+  // АВТОЗБЕРЕЖЕННЯ ПРИ ЗМІНІ ФОРМИ
+  // ===========================
   useEffect(() => {
+    // Кожного разу, коли formValues змінюється, викликаємо debounced функцію
     debouncedSaveDraft(formValues);
   }, [formValues, debouncedSaveDraft]);
 
-  // Мутація для створення нотатки
-  const { mutate } = useMutation({
-    mutationFn: createNote,
+  // ===========================
+  // REACT QUERY MUTATION
+  // ===========================
+  // Що таке mutation?
+  // Mutation — це операція, яка ЗМІНЮЄ дані на сервері (POST, PUT, DELETE).
+  // React Query автоматично керує станом завантаження, помилками, кешем.
+  //
+  // Переваги:
+  // ✅ Автоматична обробка loading/error
+  // ✅ Оптимістичні оновлення
+  // ✅ Автоматичне повторення при помилках
+  const { mutate, isPending } = useMutation({
+    mutationFn: createNote, // Функція для відправки даних
     onSuccess: () => {
-      clearDraft();
-      router.push('/notes/filter/all');
+      // Викликається після успішного створення нотатки
+      clearDraft(); // Очищуємо чернетку
+      router.push('/notes/filter/all'); // Перенаправляємо на список нотаток
     },
   });
 
+  // ===========================
+  // ОБРОБКА ВІДПРАВКИ ФОРМИ
+  // ===========================
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log(formValues);
-    mutate(formValues); // всі поля: title, content, tag
+    event.preventDefault(); // Запобігаємо перезавантаженню сторінки
+    console.log('Submitting note:', formValues);
+    mutate(formValues); // Відправляємо дані на сервер
   };
 
+  // Скасувати створення нотатки
   const handleCancel = () => router.push('/notes/filter/all');
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
+      {/* Поле для заголовка нотатки */}
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -70,9 +124,12 @@ const NoteForm = () => {
           onChange={handleChange}
           className={css.input}
           required
+          disabled={isPending} // Вимикаємо поле під час відправки
+          placeholder="Enter note title"
         />
       </div>
 
+      {/* Поле для змісту нотатки */}
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
         <textarea
@@ -82,31 +139,40 @@ const NoteForm = () => {
           onChange={handleChange}
           className={css.textarea}
           required
+          disabled={isPending}
+          placeholder="Write your note content..."
+          rows={8}
         ></textarea>
       </div>
 
+      {/* Поле для вибору тегу */}
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
-
         <TagsMenu
           id="tag"
           options={tagOptions}
           value={formValues.tag}
           onChange={(tag) => setFormValues((prev) => ({ ...prev, tag: tag }))}
-          placeholder={'Select tag'}
+          placeholder="Select a tag"
         />
       </div>
 
+      {/* Кнопки дій */}
       <div className={css.actions}>
         <button
           type="button"
           className={css.cancelButton}
           onClick={handleCancel}
+          disabled={isPending} // Вимикаємо під час відправки
         >
           Cancel
         </button>
-        <button type="submit" className={css.submitButton}>
-          Create note
+        <button
+          type="submit"
+          className={css.submitButton}
+          disabled={isPending} // Вимикаємо під час відправки
+        >
+          {isPending ? 'Creating...' : 'Create Note'}
         </button>
       </div>
     </form>
